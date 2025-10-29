@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Sign up — ClassroomX{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-6 rounded shadow">
+  <h2 class="text-2xl font-semibold mb-4">Create Account</h2>
+  <form method="post" action="/auth/signup">
+    <div class="mb-4">
+      <label class="block text-sm mb-1">Name</label>
+      <input name="name" required class="w-full border rounded px-3 py-2" />
+    </div>
+    <div class="mb-4">
+      <label class="block text-sm mb-1">Email</label>
+      <input name="email" type="email" required class="w-full border rounded px-3 py-2" />
+    </div>
+    <div class="mb-4">
+      <label class="block text-sm mb-1">Password</label>
+      <input name="password" type="password" required class="w-full border rounded px-3 py-2" />
+    </div>
+    <div class="mb-6">
+      <label class="block text-sm mb-1">Role</label>
+      <select name="role" class="w-full border rounded px-3 py-2">
+        <option value="student">Student</option>
+        <option value="teacher">Teacher</option>
+      </select>
+    </div>
+    <button class="bg-blue-600 text-white px-4 py-2 rounded">Sign up</button>
+  </form>
+</div>
+{% endblock %}

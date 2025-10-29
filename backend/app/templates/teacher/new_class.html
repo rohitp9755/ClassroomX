@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}New Class — ClassroomX{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Create New Class</h1>
+<form method="post" action="/teacher/classes" class="max-w-md space-y-4">
+  <div>
+    <label class="block text-sm mb-1">Name</label>
+    <input name="name" required class="w-full border rounded px-3 py-2" />
+  </div>
+  <button class="bg-blue-600 text-white px-4 py-2 rounded">Create</button>
+</form>
+{% endblock %}

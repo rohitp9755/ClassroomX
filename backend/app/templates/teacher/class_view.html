@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Class — ClassroomX{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold">{{ classroom.name }}</h1>
+<p class="text-gray-600 mb-4">Code: <span class="font-mono">{{ classroom.code }}</span></p>
+<a href="/teacher/classes/{{ classroom.id }}/assignments/new" class="inline-block bg-blue-600 text-white px-4 py-2 rounded mb-6">New Assignment</a>
+
+<div class="grid md:grid-cols-2 gap-6">
+  <div>
+    <h2 class="font-semibold mb-2">Assignments</h2>
+    <ul class="bg-white rounded border divide-y">
+      {% for a in classroom.assignments %}
+      <li class="p-3 flex justify-between">
+        <span>{{ a.title }}</span>
+        <a class="text-blue-600" href="/teacher/assignments/{{ a.id }}/submissions">Submissions</a>
+      </li>
+      {% else %}
+      <li class="p-3 text-gray-500">No assignments yet.</li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div>
+    <h2 class="font-semibold mb-2">Students</h2>
+    <ul class="bg-white rounded border divide-y">
+      {% for s in classroom.students %}
+      <li class="p-3">{{ s.name }} ({{ s.email }})</li>
+      {% else %}
+      <li class="p-3 text-gray-500">No students yet.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

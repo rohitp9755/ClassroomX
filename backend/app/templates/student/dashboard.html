@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Student Dashboard — ClassroomX{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Student Dashboard</h1>
+<form method="post" action="/student/classes/join" class="flex gap-2 mb-6">
+  <input name="class_code" placeholder="Enter class code" class="border rounded px-3 py-2" />
+  <button class="bg-blue-600 text-white px-4 py-2 rounded">Join</button>
+</form>
+<h2 class="font-semibold mb-2">Your Classes</h2>
+<ul class="bg-white rounded border divide-y">
+  {% for c in classes %}
+  <li class="p-3 flex justify-between">
+    <span>{{ c.name }}</span>
+    <a class="text-blue-600" href="/student/classes/{{ c.id }}">Open</a>
+  </li>
+  {% else %}
+  <li class="p-3 text-gray-500">You haven't joined any classes yet.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

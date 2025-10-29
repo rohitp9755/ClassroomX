@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Assignment — ClassroomX{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-2">{{ assignment.title }}</h1>
+<p class="text-gray-600 mb-6">Due {{ assignment.due_date.strftime('%Y-%m-%d %H:%M') }} · Max {{ assignment.max_marks }}</p>
+<div class="bg-white rounded border p-4 mb-6">
+  <p class="whitespace-pre-wrap">{{ assignment.description }}</p>
+</div>
+<form method="post" action="/student/assignments/{{ assignment.id }}/submit" class="space-y-4">
+  <div>
+    <label class="block text-sm mb-1">Your Submission</label>
+    <textarea name="content" class="w-full border rounded px-3 py-2" rows="6" required></textarea>
+  </div>
+  <button class="bg-blue-600 text-white px-4 py-2 rounded">Submit</button>
+</form>
+{% endblock %}

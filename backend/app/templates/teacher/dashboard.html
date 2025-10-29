@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Teacher Dashboard — ClassroomX{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-2xl font-bold">Teacher Dashboard</h1>
+  <a href="/teacher/classes/new" class="bg-blue-600 text-white px-4 py-2 rounded">New Class</a>
+</div>
+<ul class="bg-white rounded border divide-y">
+  {% for c in classes %}
+  <li class="p-3 flex justify-between">
+    <span>{{ c.name }}</span>
+    <a class="text-blue-600" href="/teacher/classes/{{ c.id }}">Open</a>
+  </li>
+  {% else %}
+  <li class="p-3 text-gray-500">No classes yet. Create one to get started.</li>
+  {% endfor %}
+</ul>
+{% endblock %}
