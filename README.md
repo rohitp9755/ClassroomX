@@ -1,7 +1,7 @@
 
 # ClassroomX
 
-A Google Classroom–style web app (college project level) demonstrating OOP principles in Python using Flask, SQLAlchemy, Flask-Login, and Tailwind CSS (Jinja2 templates). Uses SQLite for easy local setup.
+A Virtual Classroom–style web app and Study tracker  demonstrating OOP principles in Python using Flask, SQLAlchemy, Flask-Login, and Tailwind CSS (Jinja2 templates). Uses SQLite for easy local setup.
 
 ## Tech Stack
 - Backend: Python 3.x, Flask (Blueprints)
