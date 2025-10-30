@@ -2,7 +2,13 @@
 {% extends "base.html" %}
 {% block title %}Login — ClassroomX{% endblock %}
 {% block content %}
-<div class="max-w-md mx-auto bg-white p-6 rounded shadow">
+<section class="relative min-h-screen flex flex-col justify-center items-center">
+  <div class="absolute inset-0 w-full h-full -z-10">
+    <img src="https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=1600&q=80" alt="Background classroom" class="w-full h-full object-cover object-center opacity-50 grayscale-[.7] blur-[1px] md:blur-0" />
+    <div class="absolute inset-0 bg-gradient-to-br from-white/85 via-blue-100/60 to-cyan-100/50"></div>
+  </div>
+
+ <div  class="max-w-md mx-auto bg-white p-6 rounded shadow mt-30">
   <h2 class="text-2xl font-semibold mb-4">Login</h2>
   <form method="post" action="/auth/login">
     <div class="mb-4">
@@ -16,4 +22,5 @@
     <button class="bg-blue-600 text-white px-4 py-2 rounded">Login</button>
   </form>
 </div>
+</section>
 {% endblock %}
