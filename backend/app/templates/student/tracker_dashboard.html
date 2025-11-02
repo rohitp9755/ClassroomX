@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+{% block title %}Study Tracker — ClassroomX{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-3xl font-bold">Study Tracker</h1>
+    <a href="/student/tracker/analytics" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Analytics</a>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-lg shadow p-4 border-l-4 border-blue-500">
+      <div class="text-sm text-gray-600">Total Projects</div>
+      <div class="text-2xl font-bold">{{ total_projects }}</div>
+    </div>
+    <div class="bg-white rounded-lg shadow p-4 border-l-4 border-green-500">
+      <div class="text-sm text-gray-600">Goals</div>
+      <div class="text-2xl font-bold">{{ completed_goals }}/{{ total_goals }}</div>
+      <div class="text-xs text-gray-500">{{ ((completed_goals / total_goals * 100) if total_goals > 0 else 0) | round(1) }}% Complete</div>
+    </div>
+    <div class="bg-white rounded-lg shadow p-4 border-l-4 border-purple-500">
+      <div class="text-sm text-gray-600">Study Time</div>
+      <div class="text-2xl font-bold">
+        {% set hours = (total_study_time // 3600) %}
+        {% set minutes = ((total_study_time % 3600) // 60) %}
+        {{ hours }}h {{ minutes }}m
+      </div>
+    </div>
+    <div class="bg-white rounded-lg shadow p-4 border-l-4 border-orange-500">
+      <div class="text-sm text-gray-600">Recent Sessions</div>
+      <div class="text-2xl font-bold">{{ recent_sessions | length }}</div>
+    </div>
+  </div>
+
+  <!-- Create Project Form -->
+  <div class="bg-white rounded-lg shadow p-6 mb-6">
+    <h2 class="text-xl font-semibold mb-4">Create New Project</h2>
+    <form method="post" action="/student/tracker/projects" class="flex gap-4 flex-wrap">
+      <input type="text" name="name" placeholder="Project name" required class="flex-1 min-w-[200px] border rounded px-3 py-2" />
+      <input type="text" name="description" placeholder="Description (optional)" class="flex-1 min-w-[200px] border rounded px-3 py-2" />
+      <input type="color" name="color" value="#3b82f6" class="w-16 h-10 border rounded" />
+      <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Create</button>
+    </form>
+  </div>
+
+  <!-- Projects List -->
+  <div class="space-y-4">
+    {% for project in projects %}
+    <div class="bg-white rounded-lg shadow border-l-4" style="border-left-color: {{ project.color }}">
+      <div class="p-4">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h3 class="text-xl font-semibold">{{ project.name }}</h3>
+            {% if project.description %}
+            <p class="text-gray-600 text-sm mt-1">{{ project.description }}</p>
+            {% endif %}
+          </div>
+          <div class="flex gap-2">
+            {% set completed = project.goals | selectattr("is_completed") | list | length %}
+            {% set total = project.goals | length %}
+            <span class="text-sm text-gray-600">{{ completed }}/{{ total }} goals</span>
+            <form method="post" action="/student/tracker/projects/{{ project.id }}/delete" class="inline" onsubmit="return confirm('Delete this project and all its goals?');">
+              <button type="submit" class="text-red-600 hover:text-red-800 text-sm">Delete</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        {% if total > 0 %}
+        <div class="mb-4">
+          <div class="w-full bg-gray-200 rounded-full h-2">
+            <div class="h-2 rounded-full transition-all" style="width: {{ (completed / total * 100) }}%; background-color: {{ project.color }}"></div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Goals List -->
+        <div class="space-y-2 mb-4">
+          {% for goal in project.goals %}
+          <div class="flex items-center gap-3 p-3 bg-gray-50 rounded {% if goal.is_completed %}opacity-75{% endif %}" id="goal-{{ goal.id }}">
+            <button onclick="toggleGoal({{ goal.id }})" class="focus:outline-none">
+              {% if goal.is_completed %}
+              <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {% else %}
+              <svg class="w-6 h-6 text-gray-400 hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {% endif %}
+            </button>
+            <div class="flex-1">
+              <div class="font-medium {% if goal.is_completed %}line-through text-gray-500{% endif %}">{{ goal.title }}</div>
+              {% if goal.description %}
+              <div class="text-sm text-gray-600">{{ goal.description }}</div>
+              {% endif %}
+              {% if goal.target_date %}
+              <div class="text-xs text-gray-500">Target: {{ goal.target_date.strftime('%Y-%m-%d') }}</div>
+              {% endif %}
+              {% set goal_hours = (goal.total_study_time // 3600) %}
+              {% set goal_minutes = ((goal.total_study_time % 3600) // 60) %}
+              {% if goal.total_study_time > 0 %}
+              <div class="text-xs text-blue-600 mt-1">⏱️ {{ goal_hours }}h {{ goal_minutes }}m</div>
+              {% endif %}
+            </div>
+            <div class="flex gap-2">
+              <!-- Timer Button -->
+              <button onclick="startTimer({{ goal.id }}, '{{ goal.title }}')" class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600">⏱️ Timer</button>
+              <form method="post" action="/student/tracker/goals/{{ goal.id }}/delete" class="inline" onsubmit="return confirm('Delete this goal?');">
+                <button type="submit" class="text-red-600 hover:text-red-800 text-sm">Delete</button>
+              </form>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Add Goal Form -->
+        <form method="post" action="/student/tracker/projects/{{ project.id }}/goals" class="flex gap-2 flex-wrap">
+          <input type="text" name="title" placeholder="Add a goal..." required class="flex-1 min-w-[200px] border rounded px-3 py-2 text-sm" />
+          <input type="text" name="description" placeholder="Description (optional)" class="flex-1 min-w-[150px] border rounded px-3 py-2 text-sm" />
+          <input type="date" name="target_date" class="border rounded px-3 py-2 text-sm" />
+          <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700">Add Goal</button>
+        </form>
+      </div>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-lg shadow p-8 text-center text-gray-500">
+      <p class="text-lg mb-2">No projects yet!</p>
+      <p>Create your first project above to start tracking your study goals.</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Timer Modal -->
+<div id="timerModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+  <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-xl font-bold" id="timerGoalTitle">Timer</h3>
+      <button onclick="closeTimer()" class="text-gray-500 hover:text-gray-700">✕</button>
+    </div>
+    <div class="text-center mb-6">
+      <div class="text-5xl font-mono font-bold mb-2" id="timerDisplay">00:00:00</div>
+      <div class="text-sm text-gray-600 mb-4" id="timerStatus">Ready to start</div>
+    </div>
+    <div class="flex gap-2 justify-center mb-4">
+      <button id="timerStartBtn" onclick="toggleTimer()" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">Start</button>
+      <button id="timerPauseBtn" onclick="pauseTimer()" class="hidden bg-yellow-600 text-white px-6 py-2 rounded hover:bg-yellow-700">Pause</button>
+      <button onclick="stopTimer()" class="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700">Stop & Save</button>
+    </div>
+    <div class="mb-4">
+      <label class="block text-sm mb-1">Session Notes (optional)</label>
+      <textarea id="timerNotes" class="w-full border rounded px-3 py-2 text-sm" rows="3" placeholder="What did you study?"></textarea>
+    </div>
+    <div class="text-xs text-gray-500 text-center">Timer automatically saves when you stop</div>
+  </div>
+</div>
+
+<script>
+let timerInterval = null;
+let timerSeconds = 0;
+let timerGoalId = null;
+let timerRunning = false;
+let timerStartTime = null;
+
+function startTimer(goalId, goalTitle) {
+  timerGoalId = goalId;
+  document.getElementById('timerGoalTitle').textContent = goalTitle;
+  document.getElementById('timerModal').classList.remove('hidden');
+  timerSeconds = 0;
+  timerRunning = false;
+  updateTimerDisplay();
+}
+
+function closeTimer() {
+  if (timerRunning) {
+    if (!confirm('Timer is running. Stop and save or cancel?')) return;
+    stopTimer();
+  }
+  document.getElementById('timerModal').classList.add('hidden');
+  timerSeconds = 0;
+  timerGoalId = null;
+}
+
+function toggleTimer() {
+  if (!timerRunning) {
+    timerRunning = true;
+    timerStartTime = Date.now();
+    document.getElementById('timerStartBtn').classList.add('hidden');
+    document.getElementById('timerPauseBtn').classList.remove('hidden');
+    document.getElementById('timerStatus').textContent = 'Timer running...';
+    
+    timerInterval = setInterval(() => {
+      timerSeconds++;
+      updateTimerDisplay();
+    }, 1000);
+  }
+}
+
+function pauseTimer() {
+  if (timerRunning) {
+    timerRunning = false;
+    clearInterval(timerInterval);
+    document.getElementById('timerStartBtn').classList.remove('hidden');
+    document.getElementById('timerPauseBtn').classList.add('hidden');
+    document.getElementById('timerStatus').textContent = 'Paused';
+  }
+}
+
+function stopTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  
+  if (timerSeconds > 0) {
+    const notes = document.getElementById('timerNotes').value;
+    const formData = new FormData();
+    formData.append('goal_id', timerGoalId);
+    formData.append('duration', timerSeconds);
+    formData.append('notes', notes);
+    
+    fetch('/student/tracker/sessions', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert('Session saved! Refresh the page to see updated stats.');
+        window.location.reload();
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Error saving session');
+    });
+  }
+  
+  closeTimer();
+}
+
+function updateTimerDisplay() {
+  const hours = Math.floor(timerSeconds / 3600);
+  const minutes = Math.floor((timerSeconds % 3600) / 60);
+  const seconds = timerSeconds % 60;
+  document.getElementById('timerDisplay').textContent = 
+    `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+function toggleGoal(goalId) {
+  const formData = new FormData();
+  formData.append('goal_id', goalId);
+  
+  fetch(`/student/tracker/goals/${goalId}/toggle`, {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    const goalDiv = document.getElementById(`goal-${goalId}`);
+    const checkbox = goalDiv.querySelector('svg');
+    const title = goalDiv.querySelector('.font-medium');
+    
+    if (data.is_completed) {
+      checkbox.classList.remove('text-gray-400', 'hover:text-green-600');
+      checkbox.classList.add('text-green-600');
+      goalDiv.classList.add('opacity-75');
+      title.classList.add('line-through', 'text-gray-500');
+    } else {
+      checkbox.classList.remove('text-green-600');
+      checkbox.classList.add('text-gray-400', 'hover:text-green-600');
+      goalDiv.classList.remove('opacity-75');
+      title.classList.remove('line-through', 'text-gray-500');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Error updating goal');
+  });
+}
+</script>
+{% endblock %}
+

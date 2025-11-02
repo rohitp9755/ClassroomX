@@ -43,7 +43,7 @@ def create_app() -> Flask:
 
     with app.app_context():
         try:
-            from .models import user, classroom, assignment, submission  # noqa: F401
+            from .models import user, classroom, assignment, submission, project, goal, study_session  # noqa: F401
         except Exception:
             pass
 

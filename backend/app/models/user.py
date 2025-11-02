@@ -14,6 +14,7 @@ class User(UserMixin, db.Model):
     # Relationships
     teaching_classrooms = db.relationship("Classroom", back_populates="teacher", lazy="select")
     submissions = db.relationship("Submission", back_populates="student", lazy="select")
+    projects = db.relationship("Project", back_populates="student", cascade="all, delete-orphan", lazy="select")
 
     def get_id(self):  # type: ignore[override]
         return str(self.id)
